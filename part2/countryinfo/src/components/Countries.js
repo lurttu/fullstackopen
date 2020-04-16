@@ -9,20 +9,9 @@ const filterCountries = (array, query) => {
   });
 };
 
+//TODO: add state to control detailBool, and button to switch it
 const Countries = ({ countries, filter }) => {
-  const filteredList = (detailBool) =>
-    filterCountries(
-      countries.map((country) => (
-        <Country
-          key={country.alpha3Code}
-          country={country}
-          detail={detailBool}
-        />
-      )),
-      filter
-    );
-
-  const listTest = filterCountries(
+  const filteredList = filterCountries(
     countries.map((country) => (
       <Country key={country.alpha3Code} country={country} />
     )),
@@ -31,12 +20,12 @@ const Countries = ({ countries, filter }) => {
 
   return (
     <div>
-      {listTest.length > 11
+      {filteredList.length > 11
         ? "Too many matches, specify another filter"
-        : listTest.length < 11 && listTest.length !== 1
-        ? filteredList(false)
-        : listTest.length === 1
-        ? filteredList(true)
+        : filteredList.length < 11 && filteredList.length !== 1
+        ? filteredList
+        : filteredList.length === 1
+        ? filteredList
         : "Something went wrong"}
     </div>
   );
