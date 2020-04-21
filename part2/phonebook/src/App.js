@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Numbers from './components/Numbers'
 import NewPersonForm from './components/NewPersonForm'
 import Filter from './components/Filter'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
@@ -9,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState([null, ''])
 
   useEffect(() => {
     personService.getAll().then(initialPersons => {
@@ -34,7 +36,12 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
         })
-        .catch(error => console.log(error))
+        .then(() => {
+          setMessage([`Person '${person.name}' has been added`, ''])
+          setTimeout(() => {
+            setMessage([null, ''])
+          }, 5000)
+        })
 
       document.getElementById('name').value = ''
       document.getElementById('number').value = ''
@@ -49,11 +56,19 @@ const App = () => {
       const oldPerson = persons.find(p => p.name === person.name)
       const changedPerson = { ...oldPerson, number: person.number }
 
-      personService.update(oldPerson.id, changedPerson).then(returnedPerson => {
-        setPersons(
-          persons.map(p => (p.id !== oldPerson.id ? p : returnedPerson))
-        )
-      })
+      personService
+        .update(oldPerson.id, changedPerson)
+        .then(returnedPerson => {
+          setPersons(
+            persons.map(p => (p.id !== oldPerson.id ? p : returnedPerson))
+          )
+        })
+        .then(() => {
+          setMessage([`${person.name}'s number has been updated`, ''])
+          setTimeout(() => {
+            setMessage([null, ''])
+          }, 5000)
+        })
     }
   }
 
@@ -71,15 +86,32 @@ const App = () => {
 
   const deleteHandler = person => {
     window.confirm(`Delete ${person.name}?`)
-    personService.deleteByID(person.id)
+    personService
+      .deleteByID(person.id)
+      .then(() => {
+        setMessage([`'${person.name}' has been deleted`, ''])
+        setTimeout(() => {
+          setMessage([null, ''])
+        }, 5000)
+      })
+      .catch(() => {
+        setMessage([
+          `'${person.name}' has already been deleted from the server`,
+          'error'
+        ])
+        setTimeout(() => {
+          setMessage([null, ''])
+        }, 5000)
+      })
     setPersons(persons.filter(n => n.id !== person.id))
   }
 
   return (
-    <div>
+    <div className='container'>
       <h2>Phonebook</h2>
       <Filter filterHandler={updateFilter} />
       <h3>Add a new number</h3>
+      <Notification message={message} />
       <NewPersonForm
         nameHandler={updateNewName}
         numberHandler={updateNewNumber}
