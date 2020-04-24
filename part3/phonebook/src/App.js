@@ -26,10 +26,7 @@ const App = () => {
       id: persons[persons.length - 1].id + 1
     }
 
-    if (
-      persons.map(person => person.name).indexOf(person.name) === -1 && //name of person is not on the persons list (index is -1) and
-      person.name !== '' //name is not empty
-    ) {
+    if (persons.map(person => person.name).indexOf(person.name) === -1) {
       personService
         .create(person)
         .then(returnedPerson => {
@@ -42,13 +39,18 @@ const App = () => {
             setMessage([null, ''])
           }, 5000)
         })
+        .catch(error => {
+          console.log(error.response.data)
+          setMessage([error.response.data.error, 'error'])
+          setTimeout(() => {
+            setMessage([null, ''])
+          }, 5000)
+        })
+    }
 
-      document.getElementById('name').value = ''
-      document.getElementById('number').value = ''
-    }
-    if (person.name === '') {
-      window.alert("name can't be empty")
-    }
+    document.getElementById('name').value = ''
+    document.getElementById('number').value = ''
+
     if (persons.map(person => person.name).indexOf(person.name) !== -1) {
       window.confirm(
         `${person.name} is already added to the phonebook, replace the old number with a new one?`
@@ -65,15 +67,6 @@ const App = () => {
         })
         .then(() => {
           setMessage([`${person.name}'s number has been updated`, ''])
-          setTimeout(() => {
-            setMessage([null, ''])
-          }, 5000)
-        })
-        .catch(() => {
-          setMessage([
-            `${person.name}'s number is already on the server, and updating the phone number is not yet implemented on the backend`,
-            'error'
-          ])
           setTimeout(() => {
             setMessage([null, ''])
           }, 5000)
